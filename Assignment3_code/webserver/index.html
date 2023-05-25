@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Cloud Dashboard</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <!-- Include jQuery -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<script>
+  var countdownInterval;
+
+  function startCountdown() {
+    countdownInterval = setInterval(function() {
+      $.get('/next_execution', function(data) {
+        $('#countdown span').text(data.remaining_seconds);
+      });
+    }, 1000);
+  }
+
+  function stopCountdown() {
+    clearInterval(countdownInterval);
+    $('#countdown span').text('N/A');
+  }
+
+  $(document).ready(function() {
+    $("#form1, #form2, #form3").submit(function(event) {
+      event.preventDefault(); // Prevent the form from submitting via the browser
+      var form = $(this);
+      $.ajax({
+        type: 'POST',
+        url: form.attr('action'),
+        data: JSON.stringify({
+          'sensor_type': form.find('input[name="sensor_type"]').val(),
+          'command': form.find('select[name="command"]').val()
+        }),
+        contentType: 'application/json',
+        dataType: 'json',
+        success: function(data) {
+          console.log(data);
+        }
+      });
+    });
+
+    function startScheduler() {
+      $.ajax({
+        type: 'POST',
+        url: '/start_scheduler',
+        success: function(data) {
+          console.log(data);
+          startCountdown();
+        }
+      });
+    }
+
+    function stopScheduler() {
+      $.ajax({
+        type: 'POST',
+        url: '/stop_scheduler',
+        success: function(data) {
+          console.log(data);
+          stopCountdown();
+        }
+      });
+    }
+
+    $("#start_scheduler_button").click(startScheduler);
+    $("#stop_scheduler_button").click(stopScheduler);
+  });
+</script>
+
+<body>
+  <div class="container">
+    <h1 class="mb-3">Cloud Dashboard</h1>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="/">Index</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/humidity_view">Humidity</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/temperature_view">Temperature</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/lighting_view">Lighting</a>
+        </li>
+      </ul>
+    </nav>
+
+    <h3>Scheduler</h3>
+    <div>
+      <button id="start_scheduler_button" class="btn btn-primary">Start Scheduler</button>
+      <button id="stop_scheduler_button" class="btn btn-danger">Stop Scheduler</button>
+    </div>
+    <p id="countdown">Next job execution in: <span></span> seconds</p>
+
+    <h2 class="mb-3">Commands</h2>
+
+    <h3>Action 1: Humidity</h3>
+    <form id="form1" action="/action1" method="post" class="mb-3">
+      <input type="hidden" name="sensor_type" value="Humidity">
+      <div class="form-group">
+        <label for="command1">Select Command:</label>
+        <select name="command" id="command1" class="form-control">
+          <!-- Options go here -->
+          <option value="IncreaseHumidityBig1">Increase Humidity Big 1</option>
+          <option value="IncreaseHumiditySmall1">Increase Humidity Small 1</option>
+          <option value="DecreaseHumiditySmall1">Decrease Humidity Small 1</option>
+          <option value="DecreaseHumidityBig1">Decrease Humidity Big 1</option>
+          <option value="OFF1">Off 1</option>
+          <option value="IncreaseHumidityBig2">Increase Humidity Big 2</option>
+          <option value="IncreaseHumiditySmall2">Increase Humidity Small 2</option>
+          <option value="DecreaseHumiditySmall2">Decrease Humidity Small 2</option>
+          <option value="DecreaseHumidityBig2">Decrease Humidity Big 2</option>
+          <option value="OFF2">Off 2</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">PRESS ME</button>
+    </form>
+
+    <h3>Action 2: Temperature</h3>
+    <form id="form2" action="/action2" method="post" class="mb-3">
+      <input type="hidden" name="sensor_type" value="Temperature">
+      <div class="form-group">
+        <label for="command2">Select Command:</label>
+        <select name="command" id="command2" class="form-control">
+          <!-- Options go here -->
+          <option value="IncreaseTemperatureBig1">Increase Temperature Big 1</option>
+          <option value="IncreaseTemperatureSmall1">Increase Temperature Small 1</option>
+          <option value="DecreaseTemperatureSmall1">Decrease Temperature Small 1</option>
+          <option value="DecreaseTemperatureBig1">Decrease Temperature Big 1</option>
+          <option value="OFF1">Off 1</option>
+          <option value="IncreaseTemperatureBig2">Increase Temperature Big 2</option>
+          <option value="IncreaseTemperatureSmall2">Increase Temperature Small 2</option>
+          <option value="DecreaseTemperatureSmall2">Decrease Temperature Small 2</option>
+          <option value="DecreaseTemperatureBig2">Decrease Temperature Big 2</option>
+          <option value="OFF2">Off 2</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">PRESS ME</button>
+    </form>
+
+    <h3>Action 3: Lighting</h3>
+    <form id="form3" action="/action3" method="post" class="mb-3">
+      <input type="hidden" name="sensor_type" value="Lighting">
+      <div class="form-group">
+        <label for="command3">Select Command:</label>
+        <select name="command" id="command3" class="form-control">
+          <!-- Options go here -->
+          <option value="ON1">Turn On Zone 1</option>
+          <option value="OFF1">Turn Off Zone 1</option>
+          <option value="ON2">Turn On Zone 2</option>
+          <option value="OFF2">Turn Off Zone 2</option>
+        </select>
+      </div>
+      <button type="submit" class="btn btn-primary">PRESS ME</button>
+    </form>
+  </div>
+</body>
+
+</html>

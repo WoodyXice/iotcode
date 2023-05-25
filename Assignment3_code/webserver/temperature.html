@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- Include necessary CSS and JavaScript files -->
+    <title>Temperature Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Temperature Dashboard</h1>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/">Index</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/humidity_view">Humidity</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/temperature_view">Temperature</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/lighting_view">Lighting</a>
+                </li>
+            </ul>
+        </nav>
+
+        <h4 id="city">City: </h4>
+        <h4 id="time">Time: </h4>
+        <h4 id="weather">Weather Condition: </h4>
+        <h4 id="wind_speed">Wind Speed: </h4>
+
+        <canvas id="temperatureChart"></canvas>
+
+        <script>
+            fetch('/temperature')
+                .then(response => response.json())
+                .then(data => {
+                    var date = [];
+                    var avgValue1 = [];
+                    var avgValue2 = [];
+                    for (var i = 0; i < data.data.length; i++) {
+                        avgValue1.push(data.data[i].Average_Value1);  // Updated property name
+                        avgValue2.push(data.data[i].Average_Value2);  // Updated property name
+                        date.push(data.data[i].Time);  // Updated property name
+                    }
+
+                    // Update city, time, weather condition, and wind speed (assuming all data is from the same city)
+                    $('#city').text(`City: ${data.data[0].City}`);
+                    $('#time').text(`Time: ${data.data[0].Time}`);
+                    $('#weather').text(`Weather Condition: ${data.data[0].Weather_Condition}`);
+                    $('#wind_speed').text(`Wind Speed: ${data.data[0].Wind_Speed}`);
+
+                    const ctx = document.getElementById('temperatureChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: date,
+                            datasets: [
+                                {
+                                    label: 'Average Value 1',
+                                    data: avgValue1,
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 1
+                                },
+                                {
+                                    label: 'Average Value 2',
+                                    data: avgValue2,
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }
+                            ]
+                        },
+                        options: {
+                            scales: {
+                                y: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                });
+        </script>
+    </div>
+</body>
+
+</html>
